@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}كتاب صادر رقم {{ book['NoBook_Out'] }}{% endblock %}
+{% block page_title %}
+  <i class="fas fa-landmark me-2" style="color:var(--accent)"></i>
+  {% if org and org['Name'] %}{{ org['Name'] }}{% else %}<span style="color:var(--text-sub)">اسم المنظمة / الجهة</span>{% endif %}
+{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 no-print">
+  <div></div>
+  <div class="d-flex gap-2 flex-wrap">
+    {% if latest_scan %}
+    <a href="{{ url_for('serve_upload', filename=latest_scan) }}"
+       target="_blank" class="btn btn-outline-primary btn-sm">
+      <i class="fas fa-print me-1"></i>طباعة المسح
+    </a>
+    {% endif %}
+    <a href="{{ url_for('outgoing_list') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-right me-1"></i>رجوع
+    </a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+
+    <!-- Book Info -->
+    <div class="card border-0 mb-3">
+      <div class="card-header">
+        <h6 class="mb-0 fw-700" style="color:var(--text-sub)">
+          <i class="fas fa-info-circle me-2"></i>معلومات الكتاب الصادر
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="section-readonly">
+          <div class="row g-3">
+            {% if book['NoBook_Out_Manual'] %}
+            <div class="col-6 col-md-3 text-center">
+              <div style="font-size:.72rem;font-weight:700;color:var(--text-sub);margin-bottom:4px">رقم الصادرة</div>
+              <div class="fw-700" style="font-size:2rem;font-weight:900;color:#10b981">{{ book['NoBook_Out_Manual'] }}</div>
+            </div>
+            {% endif %}
+            <div class="col-6 col-md-3">
+              <div style="font-size:.72rem;font-weight:700;color:var(--text-sub);margin-bottom:4px">التاريخ</div>
+              <div class="fw-600">{{ book['Date_Out'] or '—' }}</div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div style="font-size:.72rem;font-weight:700;color:var(--text-sub);margin-bottom:4px">الجهة المستقبلة</div>
+              <div>{{ book['dest_name'] or '—' }}</div>
+            </div>
+            {% if book['Reply_To_InBook_No'] %}
+            <div class="col-12">
+              <div style="font-size:.72rem;font-weight:700;color:#f59e0b;margin-bottom:4px">
+                <i class="fas fa-reply me-1"></i>رقم الواردة و الموضوع
+              </div>
+              <a href="{{ url_for('incoming_view', id=book['Reply_To_InBook_No']) }}"
+                 class="badge bg-warning text-dark" style="font-size:.85rem">
+                {{ reply_in_dep or '—' }}{% if reply_in_subject %} — {{ reply_in_subject[:60] }}{% endif %}
+              </a>
+            </div>
+            {% endif %}
+            <div class="col-12">
+              <div style="font-size:.72rem;font-weight:700;color:var(--text-sub);margin-bottom:4px">الموضوع</div>
+              <div class="fw-600">{{ book['Subject'] or '—' }}</div>
+            </div>
+          </div>
+        </div>
+
+        {% if book_files %}
+        <div class="mt-3 pt-3" style="border-top:1px solid var(--border)">
+          <div style="font-size:.78rem;font-weight:700;color:var(--text-sub);margin-bottom:8px">
+            <i class="fas fa-paperclip me-1"></i>ملفات السكانر:
+          </div>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            {% for fn in book_files %}
+            <div class="d-inline-flex align-items-center gap-1 flex-wrap">
+            <a href="{{ url_for('serve_upload', filename='out/' ~ book['NoBook_Out'] ~ '/' ~ fn) }}"
+               class="btn btn-sm btn-outline-primary js-attachment-side-view">
+              <i class="fas fa-file me-1"></i>{{ fn }}
+            </a>
+            {% if book_file_delete_ok.get(fn, false) %}
+            <form method="POST" action="{{ url_for('outgoing_delete_book_attachment', book_id=book['NoBook_Out']) }}"
+                  class="confirm-delete d-inline">
+              <input type="hidden" name="rel_path" value="out/{{ book['NoBook_Out'] }}/{{ fn }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" title="حذف المرفق">
+                <i class="fas fa-trash-alt" style="font-size:.75rem"></i>
+              </button>
+            </form>
+            {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center mt-3 pt-3" style="border-top:1px solid var(--border);color:var(--text-sub)">
+          <small><i class="fas fa-paperclip me-1"></i>لم يُرفق ملف مسح</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if session.role != 'مشاهد' %}
+    {% if session.role == 'مدير' %}
+    {% set naps2_list_url = url_for('scans_inbox_list') %}
+    {% set naps2_attach_url = url_for('outgoing_attach_from_scans', id=book['NoBook_Out']) %}
+    {% set naps2_category = 'OutBook' %}
+    {% set naps2_record_pk = book['NoBook_Out'] %}
+    {% set naps2_relation_id = book['Reply_To_InBook_No'] %}
+    {% set naps2_department_name = '' %}
+    {% set naps2_panel_title = 'المسح الضوئي لحفظ الكتاب داخل المجلد بالرقم الداخلي' %}
+    {% set naps2_scan_button_label = 'المسح الضوئي لحفظ الكتاب داخل المجلد بالرقم الداخلي' %}
+    {% set naps2_save_scan_url = url_for('outgoing_save_scan', id=book['NoBook_Out']) %}
+    {% include '_naps2_scan_panel.html' %}
+    {% endif %}
+
+    <!-- Edit form -->
+    <div class="card border-0">
+      <div class="card-header" style="background:rgba(16,185,129,.08)!important;border-color:rgba(16,185,129,.2)!important">
+        <h6 class="mb-0 fw-700" style="color:#10b981">
+          <i class="fas fa-edit me-2"></i>تعديل الكتاب الصادر
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="section-editable">
+          <form method="POST" action="{{ url_for('outgoing_edit', id=book['NoBook_Out']) }}"
+                enctype="multipart/form-data">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-700">رقم الكتاب الصادر (يدوي)</label>
+                <input type="text" name="NoBook_Out_Manual" class="form-control"
+                       value="{{ book['NoBook_Out_Manual'] or '' }}"
+                       placeholder="مثل: ص/1234/2024">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-700">التاريخ</label>
+                <input type="date" name="Date_Out" class="form-control"
+                       value="{{ book['Date_Out'] or '' }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-700">الجهة المستقبلة</label>
+                <select name="Add_Out_ID" class="form-select">
+                  <option value="">— اختر —</option>
+                  {% for d in dests %}
+                  <option value="{{ d['Add_OutNo'] }}"
+                    {% if d['Add_OutNo'] == book['Add_Out_ID'] %}selected{% endif %}>
+                    {{ d['Out_place'] }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-700">
+                  <i class="fas fa-reply me-1" style="color:#f59e0b"></i>رقم الواردة و الموضوع
+                </label>
+                <select name="Reply_To_InBook_No" class="form-select">
+                  <option value="">— غير مرتبط —</option>
+                  {% for ib in in_books %}
+                  <option value="{{ ib['NoBook_In'] }}"
+                    {% if ib['NoBook_In'] == book['Reply_To_InBook_No'] %}selected{% endif %}>
+                    {{ ib['NoBook_Dep'] or '—' }} — {{ (ib['Subject_Com'] or '')[:36] }}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-700">الموضوع</label>
+                <textarea name="Subject" class="form-control" rows="3">{{ book['Subject'] or '' }}</textarea>
+              </div>
+            </div>
+            <div class="mt-3">
+              <button type="submit" class="btn btn-success px-4">
+                <i class="fas fa-save me-2"></i>حفظ التعديلات
+              </button>
+            </div>
+            <div class="row g-3 mt-1">
+              <div class="col-12">
+                <label class="form-label fw-700">
+                  <i class="fas fa-cloud-upload-alt me-1" style="color:#10b981"></i>رفع ملف من الجهاز
+                </label>
+                <div class="d-flex gap-2 mb-2 flex-wrap">
+                  <button type="button" class="btn btn-sm btn-outline-success yos-pick-upload-btn"
+                          data-target-input="out_scan_file">
+                    <i class="fas fa-folder-open me-1"></i>اختيار ملف
+                  </button>
+                </div>
+                <div id="scan-result-badge" style="display:none">
+                  <span class="badge bg-success">
+                    <i class="fas fa-check me-1"></i><span id="scan-file-label">—</span>
+                  </span>
+                </div>
+                <input type="file" id="out_scan_file" name="scan_file" class="d-none"
+                       accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif,.bmp"
+                       onchange="onScanFileSelected(this,'scan-result-badge','scan-file-label')">
+              </div>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Side panel -->
+  <div class="col-lg-4">
+    <div class="card border-0">
+      <div class="card-header fw-700" style="font-size:.85rem">
+        <i class="fas fa-info-circle me-2" style="color:#10b981"></i>ملخص
+      </div>
+      <div class="card-body">
+        {% if book['NoBook_Out_Manual'] %}
+        <div class="mb-3">
+          <div style="font-size:.72rem;color:var(--text-sub);font-weight:700;margin-bottom:4px">رقم الصادرة</div>
+          <div style="font-size:1.6rem;font-weight:900;color:#10b981">{{ book['NoBook_Out_Manual'] }}</div>
+        </div>
+        {% endif %}
+        {% if book['Reply_To_InBook_No'] %}
+        <div class="mb-3" style="padding-top:10px;border-top:1px solid var(--border)">
+          <div style="font-size:.72rem;color:#f59e0b;font-weight:700;margin-bottom:4px">
+            <i class="fas fa-reply me-1"></i>رقم الواردة و الموضوع
+          </div>
+          <a href="{{ url_for('incoming_view', id=book['Reply_To_InBook_No']) }}"
+             class="btn btn-sm btn-warning">{{ reply_in_dep or '—' }}{% if reply_in_subject %} — {{ reply_in_subject[:40] }}{% endif %}</a>
+        </div>
+        {% endif %}
+        {% if session.role == 'مدير' %}
+        <div class="mt-4 pt-3" style="border-top:1px solid var(--border)">
+          <form method="POST" action="{{ url_for('outgoing_delete', id=book['NoBook_Out']) }}"
+                class="confirm-delete">
+            <button class="btn btn-outline-danger btn-sm w-100">
+              <i class="fas fa-trash me-1"></i>حذف الكتاب
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

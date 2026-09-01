@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}إعدادات المدير{% endblock %}
+{% block page_title %}<i class="fas fa-sliders me-2" style="color:var(--accent)"></i>الإعدادات — المدير{% endblock %}
+{% block content %}
+<div class="row g-3 admin-cmd-grid">
+  <div class="col-sm-6 col-lg-4">
+    <a href="{{ url_for('destinations') }}" class="admin-cmd-btn admin-cmd-btn--out">
+      <span class="admin-cmd-btn__icon"><i class="fas fa-paper-plane"></i></span>
+      <span class="admin-cmd-btn__title">الجهات الصادرة</span>
+      <span class="admin-cmd-btn__sub">إدارة الجهات التي تُرسل إليها الكتب</span>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <a href="{{ url_for('sources') }}" class="admin-cmd-btn admin-cmd-btn--in">
+      <span class="admin-cmd-btn__icon"><i class="fas fa-inbox"></i></span>
+      <span class="admin-cmd-btn__title">الجهات الواردة</span>
+      <span class="admin-cmd-btn__sub">إدارة الجهات التي ترد منها الكتب</span>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <a href="{{ url_for('backup_admin.backup_page') }}" class="admin-cmd-btn">
+      <span class="admin-cmd-btn__icon"><i class="fas fa-database"></i></span>
+      <span class="admin-cmd-btn__title">النسخ الاحتياطي والتصفير</span>
+      <span class="admin-cmd-btn__sub">نسخ واستعادة وتصفير البيانات</span>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <a href="{{ url_for('activity_log_page') }}" class="admin-cmd-btn">
+      <span class="admin-cmd-btn__icon"><i class="fas fa-clipboard-list"></i></span>
+      <span class="admin-cmd-btn__title">تسجيل الحركات</span>
+      <span class="admin-cmd-btn__sub">سجل الإضافات والتعديلات والحذف</span>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <a href="{{ url_for('users') }}" class="admin-cmd-btn">
+      <span class="admin-cmd-btn__icon"><i class="fas fa-users"></i></span>
+      <span class="admin-cmd-btn__title">المستخدمون</span>
+      <span class="admin-cmd-btn__sub">إنشاء الحسابات والصلاحيات</span>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <a href="{{ url_for('organization') }}" class="admin-cmd-btn admin-cmd-btn--qr">
+      <span class="admin-cmd-btn__icon"><i class="fas fa-qrcode"></i></span>
+      <span class="admin-cmd-btn__title">دخول المشاهد QR موبايل</span>
+      <span class="admin-cmd-btn__sub">رمز الدخول للبحث من الهاتف</span>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <a href="{{ url_for('departments') }}" class="admin-cmd-btn">
+      <span class="admin-cmd-btn__icon"><i class="fas fa-building"></i></span>
+      <span class="admin-cmd-btn__title">الأقسام</span>
+      <span class="admin-cmd-btn__sub">إضافة الأقسام وإدارة قسم الادارة</span>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <a href="{{ url_for('github_update.update_page', gate=1) }}" class="admin-cmd-btn">
+      <span class="admin-cmd-btn__icon"><i class="fab fa-github"></i></span>
+      <span class="admin-cmd-btn__title">تحديث من GitHub</span>
+      <span class="admin-cmd-btn__sub">يتطلب كلمة مرور لفتح القسم</span>
+    </a>
+  </div>
+</div>
+{% endblock %}

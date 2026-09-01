@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>طباعة QR — مشاهد</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Tahoma, Arial, sans-serif;
+      background: #fff;
+      color: #111;
+      text-align: center;
+      padding: 24px;
+    }
+    .sheet {
+      display: inline-block;
+      padding: 28px 32px;
+      border: 2px solid #222;
+      border-radius: 12px;
+      max-width: 360px;
+    }
+    .org { font-size: 1.25rem; font-weight: 800; margin-bottom: 6px; }
+    .hint { font-size: .9rem; color: #444; margin-bottom: 16px; }
+    #qrcode { display: inline-block; margin: 8px 0; }
+    #qrcode img { display: block; width: 240px; height: 240px; }
+    .foot { font-size: .75rem; color: #666; margin-top: 12px; direction: ltr; }
+    .url {
+      margin-top: 10px;
+      font-size: .65rem;
+      color: #555;
+      direction: ltr;
+      word-break: break-all;
+    }
+    .actions { margin-top: 20px; }
+    .actions button {
+      padding: 10px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    @media print {
+      .actions { display: none !important; }
+      body { padding: 0; }
+      .sheet { border: 2px solid #000; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="org">{{ org_name }}</div>
+    <div class="hint">امسح للدخول كمشاهد — بحث المراسلات</div>
+    <div id="qrcode"></div>
+    <div class="foot">Y-ai InOut</div>
+    <div class="url">{{ qr_url }}</div>
+  </div>
+  <div class="actions">
+    <button type="button" onclick="window.print()">طباعة</button>
+    <button type="button" onclick="window.close()">إغلاق</button>
+  </div>
+
+  <script src="{{ url_for('static', filename='qrcode.min.js') }}"></script>
+  <script>
+  (function () {
+    var el = document.getElementById('qrcode');
+    var url = {{ qr_url|tojson }};
+    if (!el || typeof QRCode === 'undefined') {
+      el.innerHTML = '<p style="color:red">تعذر تحميل مكتبة QR</p>';
+      return;
+    }
+    new QRCode(el, {
+      text: url,
+      width: 240,
+      height: 240,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    // تحويل Canvas إلى صورة حتى تظهر عند الطباعة
+    setTimeout(function () {
+      var canvas = el.querySelector('canvas');
+      if (canvas) {
+        var img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        img.width = 240;
+        img.height = 240;
+        img.alt = 'QR';
+        el.innerHTML = '';
+        el.appendChild(img);
+      }
+      setTimeout(function () { window.print(); }, 250);
+    }, 150);
+  })();
+  </script>
+</body>
+</html>

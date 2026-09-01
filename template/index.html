@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block page_title %}<i class="fas fa-tachometer-alt me-2" style="color:var(--accent)"></i>لوحة التحكم{% endblock %}
+{% block content %}
+<div class="dashboard-yvg">
+
+{% if org and org['Name'] %}
+<div class="dashboard-org-banner card border-0 mb-4">
+  <div class="dashboard-org-banner__body">
+    {% if org['Logo_Path'] %}
+    <div class="dashboard-org-banner__logo">
+      <img src="{{ url_for('serve_upload', filename=org['Logo_Path']) }}"
+           alt="شعار {{ org['Name'] }}">
+    </div>
+    {% else %}
+    <div class="dashboard-org-banner__icon" aria-hidden="true">
+      <i class="fas fa-landmark"></i>
+    </div>
+    {% endif %}
+    <div class="dashboard-org-banner__text">
+      <div class="dashboard-org-banner__label">اسم المنظمة / الجهة</div>
+      <h2 class="dashboard-org-banner__name mb-0">{{ org['Name'] }}</h2>
+      {% if org['Information'] %}
+      <p class="dashboard-org-banner__info mb-0">{{ org['Information'] }}</p>
+      {% endif %}
+    </div>
+    {% if session.role == 'مدير' %}
+    <a href="{{ url_for('organization') }}" class="btn btn-sm btn-outline-primary dashboard-org-banner__edit">
+      <i class="fas fa-pen me-1"></i>تعديل
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% elif session.role == 'مدير' %}
+<div class="dashboard-org-banner dashboard-org-banner--empty card border-0 mb-4">
+  <div class="dashboard-org-banner__body">
+    <div class="dashboard-org-banner__icon" aria-hidden="true">
+      <i class="fas fa-landmark"></i>
+    </div>
+    <div class="dashboard-org-banner__text">
+      <div class="dashboard-org-banner__label">اسم المنظمة / الجهة</div>
+      <p class="dashboard-org-banner__info mb-0">لم يُضبط اسم الدائرة بعد — أضفه من معلومات الدائرة.</p>
+    </div>
+    <a href="{{ url_for('organization') }}" class="btn btn-sm btn-primary dashboard-org-banner__edit">
+      <i class="fas fa-plus me-1"></i>إضافة المعلومات
+    </a>
+  </div>
+</div>
+{% endif %}
+
+<!-- قسم بحث المرفقات OCR -->
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <a href="{{ url_for('ocr_search_page') }}" class="card border-0 text-decoration-none d-block dash-quick-card dash-quick-card--ocr">
+      <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3 py-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="dash-quick-card__icon dash-quick-card__icon--ocr">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div>
+            <div class="dash-quick-card__title">بحث داخل المرفقات (OCR)</div>
+            <div class="dash-quick-card__sub">ابحث عن كلمة ضمن محتوى الملفات الممسوحة والمرفقات</div>
+          </div>
+        </div>
+        <span class="btn btn-sm btn-primary">فتح القسم <i class="fas fa-arrow-left ms-1"></i></span>
+      </div>
+    </a>
+  </div>
+</div>
+
+{% if session.role == 'مدير' %}
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <a href="{{ url_for('sources') }}" class="card border-0 text-decoration-none d-block dash-quick-card dash-quick-card--in">
+      <div class="card-body d-flex align-items-center gap-3 py-3">
+        <div class="dash-quick-card__icon dash-quick-card__icon--in" aria-hidden="true">
+          <i class="fas fa-inbox"></i>
+          <span class="dash-quick-card__arrow"><i class="fas fa-arrow-down"></i></span>
+        </div>
+        <div class="flex-grow-1">
+          <div class="dash-quick-card__title">جهات الوارد</div>
+          <div class="dash-quick-card__sub">إدارة الجهات التي ترد منها الكتب</div>
+        </div>
+        <i class="fas fa-chevron-left dash-quick-card__chev"></i>
+      </div>
+    </a>
+  </div>
+  <div class="col-md-6">
+    <a href="{{ url_for('destinations') }}" class="card border-0 text-decoration-none d-block dash-quick-card dash-quick-card--out">
+      <div class="card-body d-flex align-items-center gap-3 py-3">
+        <div class="dash-quick-card__icon dash-quick-card__icon--out" aria-hidden="true">
+          <i class="fas fa-paper-plane"></i>
+          <span class="dash-quick-card__arrow"><i class="fas fa-arrow-up"></i></span>
+        </div>
+        <div class="flex-grow-1">
+          <div class="dash-quick-card__title">جهات الصادر</div>
+          <div class="dash-quick-card__sub">إدارة الجهات التي تُرسل إليها الكتب</div>
+        </div>
+        <i class="fas fa-chevron-left dash-quick-card__chev"></i>
+      </div>
+    </a>
+  </div>
+</div>
+{% endif %}
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="card stat-card border-0">
+      <div class="card-body text-center py-4">
+        <div class="stat-icon bg-primary-light mb-3">
+          <i class="fas fa-inbox fa-lg" style="color:var(--accent)"></i>
+        </div>
+        <h2 class="fw-800 mb-0 dash-stat-num" style="color:var(--accent);font-size:2rem">{{ total_in }}</h2>
+        <p class="mb-0 mt-1 dash-stat-label">إجمالي الوارد</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="card stat-card border-0">
+      <div class="card-body text-center py-4">
+        <div class="stat-icon bg-success-light mb-3">
+          <i class="fas fa-paper-plane fa-lg" style="color:#10b981"></i>
+        </div>
+        <h2 class="fw-800 mb-0 dash-stat-num" style="color:#10b981;font-size:2rem">{{ total_out }}</h2>
+        <p class="mb-0 mt-1 dash-stat-label">إجمالي الصادر</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="card stat-card border-0">
+      <div class="card-body text-center py-4">
+        <div class="stat-icon bg-warning-light mb-3">
+          <i class="fas fa-hourglass-half fa-lg" style="color:#f59e0b"></i>
+        </div>
+        <h2 class="fw-800 mb-0 dash-stat-num" style="color:#f59e0b;font-size:2rem">{{ in_progress }}</h2>
+        <p class="mb-0 mt-1 dash-stat-label">في طور العمل</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="card stat-card border-0">
+      <div class="card-body text-center py-4">
+        <div class="stat-icon bg-info-light mb-3">
+          <i class="fas fa-check-circle fa-lg" style="color:#0ea5e9"></i>
+        </div>
+        <h2 class="fw-800 mb-0 dash-stat-num" style="color:#0ea5e9;font-size:2rem">{{ completed }}</h2>
+        <p class="mb-0 mt-1 dash-stat-label">تم الانتهاء</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Recent Incoming -->
+  <div class="col-lg-8">
+    <div class="card border-0">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-700">
+          <i class="fas fa-clock me-2" style="color:var(--accent)"></i>آخر الكتب الواردة
+        </h6>
+        <a href="{{ url_for('incoming_add') }}" class="btn btn-primary btn-sm">
+          <i class="fas fa-plus me-1"></i>إضافة
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_in %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead>
+              <tr>
+                <th>رقم داخلي</th>
+                <th>رقم الجهة</th>
+                <th>الموضوع</th>
+                <th>الجهة</th>
+                <th>القسم</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in recent_in %}
+              <tr class="clickable-row" data-href="{{ url_for('incoming_view', id=b['NoBook_In']) }}">
+                <td><span class="badge bg-primary">{{ b['NoBook_In'] }}</span></td>
+                <td>{{ b['NoBookCome_In'] or '—' }}</td>
+                <td class="text-truncate" style="max-width:160px">{{ b['Subject_Com'] or '—' }}</td>
+                <td>{{ b['source_name'] or '—' }}</td>
+                <td>
+                  {% if b['dep_name'] %}<span class="badge bg-secondary">{{ b['dep_name'] }}</span>
+                  {% else %}—{% endif %}
+                </td>
+                <td>
+                  {% if b['Status'] == 'تم الانتهاء' %}
+                    <span class="status-done">{{ b['Status'] }}</span>
+                  {% else %}
+                    <span class="status-inprogress">{{ b['Status'] }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5" style="color:var(--text-sub)">
+          <i class="fas fa-inbox fa-3x mb-3 d-block" style="opacity:.3"></i>
+          لا توجد كتب واردة بعد
+        </div>
+        {% endif %}
+      </div>
+      {% if recent_in %}
+      <div class="card-footer text-center">
+        <a href="{{ url_for('incoming_list') }}" style="color:var(--accent);text-decoration:none;font-size:.85rem;font-weight:600">
+          عرض جميع الكتب <i class="fas fa-arrow-left ms-1"></i>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Dept Stats -->
+  <div class="col-lg-4">
+    <div class="card border-0 h-100">
+      <div class="card-header">
+        <h6 class="mb-0 fw-700">
+          <i class="fas fa-chart-bar me-2" style="color:var(--accent)"></i>الكتب حسب القسم
+        </h6>
+      </div>
+      <div class="card-body">
+        {% if dept_stats %}
+          {% for ds in dept_stats %}
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-truncate me-2" style="font-size:.88rem;font-weight:500">{{ ds['Dep_Name'] }}</span>
+            <span class="badge rounded-pill" style="background:rgba(59,130,246,.15);color:var(--accent);font-weight:700">
+              {{ ds['book_count'] }}
+            </span>
+          </div>
+          {% if not loop.last %}
+          <div style="height:1px;background:var(--border);margin-bottom:12px"></div>
+          {% endif %}
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-4" style="color:var(--text-sub)">
+            <i class="fas fa-building fa-2x mb-2 d-block" style="opacity:.3"></i>
+            لا توجد أقسام بعد
+          </div>
+        {% endif %}
+      </div>
+      <div class="card-footer text-center">
+        <a href="{{ url_for('search') }}" style="color:var(--accent);text-decoration:none;font-size:.85rem;font-weight:600">
+          <i class="fas fa-search me-1"></i>البحث المتقدم
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}إدارة المستخدمين{% endblock %}
+{% block page_title %}<i class="fas fa-users me-2" style="color:var(--accent)"></i>إدارة المستخدمين{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-4">
+    <div class="card border-0">
+      <div class="card-header fw-700">إضافة مستخدم جديد</div>
+      <div class="card-body">
+        <form method="POST">
+          <input type="hidden" name="action" value="add">
+          <div class="mb-3">
+            <label class="form-label">اسم المستخدم <span class="text-danger">*</span></label>
+            <input type="text" name="Username" class="form-control" required placeholder="بدون مسافات" autocomplete="off">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">كلمة المرور <span class="text-danger">*</span></label>
+            <input type="text" name="Password" class="form-control" required placeholder="كلمة المرور" autocomplete="new-password">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">القسم</label>
+            <select name="Dep_ID" class="form-select">
+              <option value="">— لا قسم —</option>
+              {% for d in departments %}<option value="{{ d['Dep_No'] }}">{{ d['Dep_Name'] }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">الدور / الصلاحية</label>
+            <select name="Role" class="form-select">
+              <option value="موظف قسم">موظف قسم</option>
+              <option value="مدير">مدير</option>
+              <option value="مشاهد">مشاهد (قراءة فقط)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary w-100"><i class="fas fa-user-plus me-1"></i>إضافة</button>
+        </form>
+      </div>
+    </div>
+    <div class="card border-0 mt-3">
+      <div class="card-header fw-700" style="font-size:.82rem">شرح الأدوار</div>
+      <div class="card-body p-3" style="font-size:.82rem">
+        <div class="d-flex gap-2 mb-2"><span class="badge bg-danger">مدير</span><span style="color:var(--text-sub)">صلاحيات كاملة</span></div>
+        <div class="d-flex gap-2 mb-2"><span class="badge bg-primary">موظف قسم</span><span style="color:var(--text-sub)">كتب قسمه فقط</span></div>
+        <div class="d-flex gap-2 flex-column flex-sm-row"><span class="badge bg-secondary">مشاهد</span><span style="color:var(--text-sub)">تصفح بدون تعديل — على الموبايل/التابلت يفتح مباشرة «البحث والإحصائيات» مع فلاتر البحث</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-8">
+    <div class="card border-0">
+      <div class="card-header fw-700">قائمة المستخدمين</div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr><th>#</th><th>اسم المستخدم</th><th>القسم</th><th>الدور</th><th class="no-print">إجراءات</th></tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td style="color:var(--text-sub)">{{ u['User_ID'] }}</td>
+                <td>
+                  <strong>{{ u['Username'] }}</strong>
+                  {% if u['User_ID'] == session.user_id %}<span class="badge bg-info ms-1">أنت</span>{% endif %}
+                </td>
+                <td>{{ u['Dep_Name'] or '—' }}</td>
+                <td>
+                  {% if u['Role'] == 'مدير' %}<span class="badge bg-danger">{{ u['Role'] }}</span>
+                  {% elif u['Role'] == 'موظف قسم' %}<span class="badge bg-primary">{{ u['Role'] }}</span>
+                  {% else %}<span class="badge bg-secondary">{{ u['Role'] }}</span>{% endif %}
+                </td>
+                <td class="no-print text-nowrap">
+                  <button type="button" class="btn btn-sm btn-outline-secondary me-1"
+                          data-bs-toggle="modal" data-bs-target="#editModal{{ u['User_ID'] }}"
+                          title="تعديل">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  {% if u['User_ID'] != session.user_id %}
+                  <form method="POST" action="{{ url_for('user_delete', id=u['User_ID']) }}" class="confirm-delete d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer" style="font-size:.82rem">{{ users|length }} مستخدم</div>
+    </div>
+  </div>
+</div>
+
+{% for u in users %}
+<div class="modal fade" id="editModal{{ u['User_ID'] }}" tabindex="-1" aria-labelledby="editModalLabel{{ u['User_ID'] }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel{{ u['User_ID'] }}">تعديل: {{ u['Username'] }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+      </div>
+      <form method="POST" action="{{ url_for('users') }}">
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="user_id" value="{{ u['User_ID'] }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">اسم المستخدم</label>
+            <input type="text" class="form-control" value="{{ u['Username'] }}" disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">كلمة المرور الجديدة (اتركها فارغة لعدم التغيير)</label>
+            <input type="text" name="Password" class="form-control" placeholder="كلمة المرور الجديدة" autocomplete="new-password">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">القسم</label>
+            <select name="Dep_ID" class="form-select">
+              <option value="" {% if not u['Dep_ID'] %}selected{% endif %}>— لا قسم —</option>
+              {% for d in departments %}
+              <option value="{{ d['Dep_No'] }}"
+                {% if u['Dep_ID'] is not none and d['Dep_No']|int == u['Dep_ID']|int %}selected{% endif %}>
+                {{ d['Dep_Name'] }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">الدور</label>
+            <select name="Role" class="form-select">
+              <option value="موظف قسم" {% if u['Role'] == 'موظف قسم' %}selected{% endif %}>موظف قسم</option>
+              <option value="مدير" {% if u['Role'] == 'مدير' %}selected{% endif %}>مدير</option>
+              <option value="مشاهد" {% if u['Role'] == 'مشاهد' %}selected{% endif %}>مشاهد</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer flex-wrap gap-2">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+          <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

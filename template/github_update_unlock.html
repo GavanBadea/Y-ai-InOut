@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}فتح قسم تحديث GitHub{% endblock %}
+{% block page_title %}<i class="fab fa-github me-2" style="color:var(--accent)"></i>فتح قسم تحديث GitHub{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+  <div class="col-12 col-md-6 mx-auto">
+    <div class="card border-0">
+      <div class="card-body p-4">
+        <h5 class="fw-800 mb-3">
+          <i class="fas fa-lock me-2 text-primary"></i>كلمة مرور مطلوبة
+        </h5>
+        <p class="text-muted small mb-3">
+          لإظهار صفحة التحديث من GitHub أدخل كلمة المرور. يمكنك إظهارها أو إخفاءها أثناء الكتابة.
+        </p>
+        <form method="POST">
+          <input type="hidden" name="action" value="unlock">
+          <div class="mb-3">
+            <label class="form-label">كلمة المرور</label>
+            <div class="input-group">
+              <input type="password" name="unlock_pw" id="gh-unlock-pw" class="form-control"
+                     required autocomplete="off">
+              <button type="button" class="btn btn-outline-secondary" id="gh-unlock-toggle"
+                      title="إظهار / إخفاء">
+                <i class="fas fa-eye" id="gh-unlock-icon"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-unlock me-2"></i>فتح القسم
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  var inp = document.getElementById('gh-unlock-pw');
+  var btn = document.getElementById('gh-unlock-toggle');
+  var icon = document.getElementById('gh-unlock-icon');
+  if (!inp || !btn) return;
+  btn.addEventListener('click', function () {
+    var show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    if (icon) icon.className = show ? 'fas fa-eye-slash' : 'fas fa-eye';
+  });
+})();
+</script>
+{% endblock %}

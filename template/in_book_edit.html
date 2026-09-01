@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}تعديل كتاب وارد رقم {{ book['NoBook_In'] }}{% endblock %}
+{% block page_title %}
+  <i class="fas fa-edit me-2" style="color:#f59e0b"></i>تعديل كتاب وارد رقم
+  <span class="badge bg-warning text-dark ms-1">{{ book['NoBook_In'] }}</span>
+{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-end mb-3">
+  <a href="{{ url_for('incoming_view', id=book['NoBook_In']) }}"
+     class="btn btn-outline-secondary btn-sm">
+    <i class="fas fa-arrow-right me-1"></i>رجوع بدون حفظ
+  </a>
+</div>
+
+<div class="card border-0" style="max-width:750px;margin:auto">
+  <div class="card-header" style="background:rgba(245,158,11,.08)!important;border-color:rgba(245,158,11,.2)!important">
+    <h6 class="mb-0 fw-700" style="color:#f59e0b">
+      <i class="fas fa-edit me-2"></i>تعديل بيانات الكتاب — للمدير فقط
+    </h6>
+  </div>
+  <div class="card-body p-4">
+    <form method="POST">
+      <div class="row g-3">
+        <div class="col-12">
+          <div style="font-size:.75rem;font-weight:800;color:var(--accent);letter-spacing:.05em;margin-bottom:6px">
+            معلومات كتاب الجهة الواردة
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">رقم الكتاب الجهة الواردة</label>
+          <input type="text" name="NoBookCome_In" class="form-control"
+                 value="{{ book['NoBookCome_In'] or '' }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">تاريخ الكتاب</label>
+          <input type="date" name="Date_Com" class="form-control"
+                 value="{{ book['Date_Com'] or '' }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">الجهة الواردة</label>
+          <select name="Add_In_ID" class="form-select">
+            <option value="">— اختر —</option>
+            {% for s in sources %}
+            <option value="{{ s['Add_InNo'] }}"
+              {% if s['Add_InNo'] == book['Add_In_ID'] %}selected{% endif %}>
+              {{ s['In_place'] }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 mt-2">
+          <div style="font-size:.75rem;font-weight:800;color:#10b981;letter-spacing:.05em;margin-bottom:6px">
+            معلومات وارد الدائرة
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">رقم وارد الدائرة</label>
+          <input type="text" name="NoBook_Dep" class="form-control"
+                 value="{{ book['NoBook_Dep'] or '' }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">تاريخ وارد الدائرة</label>
+          <input type="date" name="Date_Dep" class="form-control"
+                 value="{{ book['Date_Dep'] or '' }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">القسم الحالي</label>
+          <select name="Current_Dep_ID" class="form-select">
+            <option value="">— بدون قسم —</option>
+            {% for d in departments %}
+            <option value="{{ d['Dep_No'] }}"
+              {% if d['Dep_No'] == book['Current_Dep_ID'] %}selected{% endif %}>
+              {{ d['Dep_Name'] }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">الموضوع <span class="text-danger">*</span></label>
+          <textarea name="Subject_Com" class="form-control" rows="3" required>{{ book['Subject_Com'] or '' }}</textarea>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">الحالة</label>
+          <select name="Status" class="form-select">
+            <option value="في طور العمل" {% if book['Status'] == 'في طور العمل' %}selected{% endif %}>في طور العمل</option>
+            <option value="تم الانتهاء"  {% if book['Status'] == 'تم الانتهاء'  %}selected{% endif %}>تم الانتهاء</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">الملاحظة الختامية</label>
+          <input type="text" name="Final_Note" class="form-control"
+                 value="{{ book['Final_Note'] or '' }}" placeholder="اختياري">
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-warning px-4 fw-700">
+          <i class="fas fa-save me-2"></i>حفظ التعديلات
+        </button>
+        <a href="{{ url_for('incoming_view', id=book['NoBook_In']) }}"
+           class="btn btn-outline-secondary px-4">إلغاء</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}جهات الوارد{% endblock %}
+{% block page_title %}<i class="fas fa-inbox me-2" style="color:var(--accent)"></i>جهات الوارد{% endblock %}
+{% block content %}
+<div class="row g-3">
+  {% if session.role == 'مدير' %}
+  <div class="col-md-4">
+    <div class="card border-0">
+      <div class="card-header fw-700">إضافة جهة واردة</div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">اسم الجهة <span class="text-danger">*</span></label>
+            <input type="text" name="In_place" class="form-control" required placeholder="مثل: وزارة المالية">
+          </div>
+          <button type="submit" class="btn btn-primary w-100"><i class="fas fa-plus me-1"></i>إضافة</button>
+        </form>
+        <hr>
+        <div class="fw-700 mb-2" style="font-size:.9rem">رفع من Excel</div>
+        <a href="{{ url_for('sources_excel_template') }}" class="btn btn-outline-secondary btn-sm w-100 mb-2">
+          <i class="fas fa-download me-1"></i>تنزيل القالب
+        </a>
+        <form method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="import_excel">
+          <input type="file" name="excel_file" class="form-control form-control-sm mb-2"
+                 accept=".xlsx,.csv" required>
+          <button type="submit" class="btn btn-outline-primary w-100 btn-sm">
+            <i class="fas fa-file-excel me-1"></i>رفع الأسماء
+          </button>
+        </form>
+        <div class="form-text mt-2">عمود واحد: اسم الجهة. يُتخطى المكرر.</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  <div class="col-md-{% if session.role == 'مدير' %}8{% else %}12{% endif %}">
+    <div class="card border-0">
+      <div class="card-header fw-700">قائمة جهات الوارد</div>
+      <div class="card-body p-0">
+        {% if items %}
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr><th>#</th><th>اسم الجهة</th>{% if session.role == 'مدير' %}<th class="no-print">حذف</th>{% endif %}</tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td style="color:var(--text-sub)">{{ item['Add_InNo'] }}</td>
+              <td>{{ item['In_place'] }}</td>
+              {% if session.role == 'مدير' %}
+              <td class="no-print">
+                <form method="POST" action="{{ url_for('source_delete', id=item['Add_InNo']) }}" class="confirm-delete d-inline">
+                  <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                </form>
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5" style="color:var(--text-sub)">
+          <i class="fas fa-arrow-down fa-3x mb-3 d-block" style="opacity:.25"></i>لا توجد جهات واردة
+        </div>
+        {% endif %}
+      </div>
+      {% if items %}<div class="card-footer" style="font-size:.82rem">{{ items|length }} جهة</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

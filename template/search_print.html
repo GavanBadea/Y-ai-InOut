@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Tahoma, Arial, sans-serif;
+      color: #111;
+      background: #fff;
+    }
+    .actions {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+    }
+    .actions button {
+      padding: 8px 14px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .print-tip {
+      position: fixed;
+      top: 8px;
+      right: 8px;
+      z-index: 100;
+      max-width: 280px;
+      font-size: 12px;
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: #9a3412;
+    }
+
+    /* رأس الصفحة — ملتصق بالأعلى */
+    .print-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 22mm;
+      margin: 0;
+      padding: 3mm 12mm;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1.5px solid #222;
+      background: #fff;
+      z-index: 10;
+    }
+    .print-header__brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .print-header img {
+      max-height: 14mm;
+      max-width: 24mm;
+      object-fit: contain;
+      display: block;
+    }
+    .print-header .org-name {
+      font-size: 14pt;
+      font-weight: 800;
+      line-height: 1.2;
+      margin: 0;
+    }
+    .print-header__dates {
+      flex-shrink: 0;
+      font-size: 9pt;
+      font-weight: 700;
+      color: #222;
+      text-align: left;
+      direction: rtl;
+      white-space: nowrap;
+    }
+
+    /* تذييل — ملتصق بالأسفل */
+    .print-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 16mm;
+      margin: 0;
+      padding: 2.5mm 12mm;
+      border-top: 1.5px solid #222;
+      background: #fff;
+      font-size: 8pt;
+      color: #333;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+      text-align: center;
+      direction: rtl;
+      flex-wrap: wrap;
+    }
+    .print-footer span {
+      display: inline-block;
+      margin: 0 6px;
+    }
+
+    .content {
+      margin: 0;
+      padding: 24mm 12mm 18mm;
+    }
+    .meta {
+      color: #555;
+      font-size: 9pt;
+      margin: 0 0 10px;
+    }
+    h1.report-title {
+      font-size: 12pt;
+      margin: 0 0 6px;
+    }
+    h2 {
+      font-size: 10.5pt;
+      margin: 12px 0 6px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 3px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      font-size: 8.5pt;
+    }
+    th, td {
+      border: 1px solid #bbb;
+      padding: 4px 5px;
+      text-align: right;
+    }
+    th { background: #f3f4f6; }
+
+    @media print {
+      .actions, .print-tip { display: none !important; }
+      html, body { margin: 0 !important; padding: 0 !important; }
+      .print-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+      .print-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+      }
+      a { color: #111; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  {% set org_name = (org['Name'] if org and org['Name'] else '') %}
+  {% set logo = (org['Logo_Path'] if org and org['Logo_Path'] else '') %}
+  {% set address = (org['Address'] if org and org['Address'] else '') %}
+  {% set phone = (org['Phone'] if org and org['Phone'] else '') %}
+  {% set email = (org['Email'] if org and org['Email'] else '') %}
+  {% set website = (org['Website'] if org and org['Website'] else '') %}
+  {% set d_from = meta.date_from or '' %}
+  {% set d_to = meta.date_to or '' %}
+
+  <div class="actions">
+    <button type="button" onclick="window.print()">طباعة</button>
+    <button type="button" onclick="window.close()">إغلاق</button>
+  </div>
+  <div class="print-tip">
+    لإخفاء التاريخ والرابط في أعلى/أسفل ورقة المتصفح:
+    في نافذة الطباعة ألغِ خيار
+    <strong>Headers and footers</strong>
+    / الرؤوس والتذييلات.
+  </div>
+
+  <header class="print-header">
+    <div class="print-header__brand">
+      {% if logo %}
+      <img src="{{ url_for('serve_upload', filename=logo) }}" alt="">
+      {% endif %}
+      {% if org_name %}<p class="org-name">{{ org_name }}</p>{% endif %}
+    </div>
+    <div class="print-header__dates">
+      {% if d_from or d_to %}
+        الفترة: {{ d_from or '—' }} — {{ d_to or '—' }}
+      {% endif %}
+    </div>
+  </header>
+
+  <footer class="print-footer">
+    <div>
+      {% if address %}<span>العنوان: {{ address }}</span>{% endif %}
+      {% if phone %}<span>الهاتف: {{ phone }}</span>{% endif %}
+    </div>
+    <div>
+      {% if email %}<span>البريد: {{ email }}</span>{% endif %}
+      {% if website %}<span dir="ltr">{{ website }}</span>{% endif %}
+    </div>
+  </footer>
+
+  <main class="content">
+    <h1 class="report-title">تقرير البحث</h1>
+    <div class="meta">
+      {% if meta.q %}نص البحث: {{ meta.q }} · {% endif %}
+      {% if meta.dep_no %}رقم دائرة: {{ meta.dep_no }} · {% endif %}
+      النوع: {{ meta.search_type }}
+    </div>
+
+    {% if meta.search_type in ('in', 'both') %}
+    <h2>الكتب الواردة ({{ in_rows|length }})</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>رقم وارد الدائرة</th>
+          <th>رقم الجهة</th>
+          <th>التاريخ</th>
+          <th>الموضوع</th>
+          <th>القسم</th>
+          <th>الحالة</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in in_rows %}
+        <tr>
+          <td>{{ b['NoBook_Dep'] or '—' }}</td>
+          <td>{{ b['NoBookCome_In'] or '—' }}</td>
+          <td>{{ b['Date_Com'] or '—' }}</td>
+          <td>{{ b['Subject_Com'] or '—' }}</td>
+          <td>{{ b['dep_name'] or '—' }}</td>
+          <td>{{ b['Status'] or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">لا توجد نتائج</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if meta.search_type in ('out', 'both') %}
+    <h2>الكتب الصادرة ({{ out_rows|length }})</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>رقم صادر الدائرة</th>
+          <th>التاريخ</th>
+          <th>الموضوع</th>
+          <th>الجهة</th>
+          <th>وارد مرتبط</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in out_rows %}
+        <tr>
+          <td>{{ b['NoBook_Out_Manual'] or '—' }}</td>
+          <td>{{ b['Date_Out'] or '—' }}</td>
+          <td>{{ b['Subject'] or '—' }}</td>
+          <td>{{ b['dest_name'] or '—' }}</td>
+          <td>{{ b['reply_in_dep'] or '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">لا توجد نتائج</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </main>
+
+  <script>
+  document.title = ' ';
+  setTimeout(function () { window.print(); }, 350);
+  </script>
+</body>
+</html>

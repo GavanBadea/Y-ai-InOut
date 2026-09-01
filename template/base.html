@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}نظام إدارة المراسلات{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="{{ url_for('static', filename='mobile-portrait.js') }}?v=portrait5"></script>
+  <script>
+    (function () {
+      var k = 'yos_theme', t = localStorage.getItem(k);
+      if (t !== 'light' && t !== 'dark' && t !== 'glass') t = 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=qr-out1">
+</head>
+<body{% if request.endpoint == 'index' %} class="page-dashboard-yvg"{% elif viewer_mobile %} class="viewer-mobile-mode"{% endif %}>
+
+{% if session.user_id %}
+
+<!-- Glass Wallpaper (only visible in glass theme) -->
+<div class="glass-wallpaper"></div>
+
+<!-- App Shell -->
+<div class="app-shell">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-head">
+      <div class="sidebar-head__brand">
+        <a class="sidebar-logo" href="{{ url_for('search') if viewer_mobile else url_for('index') }}">
+          <div class="logo-icon"><i class="fas fa-y"></i></div>
+          <div class="logo-brand-text">
+            <span class="logo-text">Y-ai</span>
+            <span class="logo-sub">نظام الصادر والوارد</span>
+          </div>
+        </a>
+        {% if org and org['Name'] %}
+      {% if session.role == 'مدير' %}
+        <a class="sidebar-org{% if request.endpoint == 'organization' %} sidebar-org--active{% endif %}" href="{{ url_for('organization') }}" title="تعديل معلومات الدائرة">
+        {% else %}
+        <div class="sidebar-org">
+        {% endif %}
+          <span class="sidebar-org__name">{{ org['Name'] }}</span>
+          {% if org['Information'] %}
+          <span class="sidebar-org__info">{{ org['Information'] }}</span>
+          {% elif org['Address'] %}
+          <span class="sidebar-org__info">{{ org['Address'] }}</span>
+          {% endif %}
+        {% if session.role == 'مدير' %}</a>{% else %}</div>{% endif %}
+        {% elif session.role == 'مدير' and not viewer_mobile %}
+        <a class="sidebar-org sidebar-org--empty" href="{{ url_for('organization') }}">
+          <span class="sidebar-org__name"><i class="fas fa-landmark ms-1"></i> إضافة معلومات الدائرة</span>
+        </a>
+        {% endif %}
+      </div>
+      <button type="button" class="sidebar-toggle" id="sidebar-toggle-btn"
+              title="طي القائمة" aria-label="طي القائمة" aria-expanded="true">
+        <i class="fas fa-angles-right"></i>
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+
+      {% if viewer_mobile %}
+      <div class="nav-section">البحث</div>
+      <button type="button" class="sidebar-link js-nav-link {% if request.endpoint == 'search' %}active{% endif %}"
+         data-nav-url="{{ url_for('search') }}">
+        <span class="nav-icon"><i class="fas fa-search"></i></span>
+        <span class="nav-label">البحث والإحصائيات</span>
+      </button>
+      {% elif session.role == 'مدير' %}
+      <div class="nav-section">الرئيسية</div>
+      <button type="button" class="sidebar-link js-nav-link {% if request.endpoint == 'index' %}active{% endif %}"
+         data-nav-url="{{ url_for('index') }}">
+        <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span>
+        <span class="nav-label">لوحة التحكم</span>
+      </button>
+
+      <div class="nav-section">المراسلات</div>
+      <button type="button" class="sidebar-link js-nav-link {% if 'incoming' in (request.endpoint or '') %}active{% endif %}"
+         data-nav-url="{{ url_for('incoming_list') }}">
+        <span class="nav-icon"><i class="fas fa-inbox"></i></span>
+        <span class="nav-label">الكتب الواردة</span>
+      </button>
+      <button type="button" class="sidebar-link js-nav-link {% if 'outgoing' in (request.endpoint or '') %}active{% endif %}"
+         data-nav-url="{{ url_for('outgoing_list') }}">
+        <span class="nav-icon"><i class="fas fa-paper-plane"></i></span>
+        <span class="nav-label">الكتب الصادرة</span>
+      </button>
+      <button type="button" class="sidebar-link js-nav-link {% if request.endpoint == 'search' %}active{% endif %}"
+         data-nav-url="{{ url_for('search') }}">
+        <span class="nav-icon"><i class="fas fa-search"></i></span>
+        <span class="nav-label">البحث والإحصائيات</span>
+      </button>
+      <button type="button" class="sidebar-link js-nav-link {% if request.endpoint == 'ocr_search_page' %}active{% endif %}"
+         data-nav-url="{{ url_for('ocr_search_page') }}">
+        <span class="nav-icon"><i class="fas fa-file-alt"></i></span>
+        <span class="nav-label">بحث المرفقات OCR</span>
+      </button>
+
+      <div class="nav-section nav-section--admin">الإعدادات — المدير</div>
+      <button type="button" class="sidebar-link js-nav-link {% if request.endpoint in ('admin_settings','sources','destinations','users','activity_log_page','backup_admin.backup_page','organization','departments','github_update.update_page') %}active{% endif %}"
+         data-nav-url="{{ url_for('admin_settings') }}">
+        <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+        <span class="nav-label">الإعدادات — المدير</span>
+      </button>
+      {% elif session.role == 'موظف قسم' %}
+      <div class="nav-section">قسمك</div>
+      <button type="button" class="sidebar-link js-nav-link {% if 'incoming' in (request.endpoint or '') %}active{% endif %}"
+         data-nav-url="{{ url_for('incoming_list') }}">
+        <span class="nav-icon"><i class="fas fa-inbox"></i></span>
+        <span class="nav-label">الكتب الموجهة لي</span>
+      </button>
+      <button type="button" class="sidebar-link js-nav-link {% if request.endpoint == 'search' %}active{% endif %}"
+         data-nav-url="{{ url_for('search') }}">
+        <span class="nav-icon"><i class="fas fa-search"></i></span>
+        <span class="nav-label">البحث والإحصائيات</span>
+      </button>
+      {% else %}
+      {# مشاهد وغيره #}
+      <div class="nav-section">البحث</div>
+      <button type="button" class="sidebar-link js-nav-link {% if request.endpoint == 'search' %}active{% endif %}"
+         data-nav-url="{{ url_for('search') }}">
+        <span class="nav-icon"><i class="fas fa-search"></i></span>
+        <span class="nav-label">البحث والإحصائيات</span>
+      </button>
+      {% endif %}
+
+    </nav>
+
+    <!-- User Footer -->
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar">{{ session.username[0] | upper }}</div>
+        <div class="user-info">
+          <div class="uname">{{ session.username }}</div>
+          <span class="urole urole-badge">{{ session.role }}</span>
+        </div>
+      </div>
+      <a href="{{ url_for('logout') }}"
+         class="sidebar-link sidebar-link--logout mt-2">
+        <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+        <span class="nav-label">تسجيل الخروج</span>
+      </a>
+    </div>
+
+  </aside>
+  <!-- ══════════════ END SIDEBAR ══════════════ -->
+
+  <!-- Main Content -->
+  <div class="main-content" id="main-content">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <!-- Mobile menu -->
+      <button id="mobile-menu-btn" class="topbar-btn d-md-none">
+        <i class="fas fa-bars"></i>
+      </button>
+
+      <div class="page-title d-none d-md-block">
+        {% block page_title %}{% endblock %}
+      </div>
+
+      <div class="topbar-actions">
+        {% if session.role == 'مدير' %}
+        <div class="gh-update-wrap" id="gh-update-wrap">
+          <button type="button" class="topbar-btn gh-update-btn" id="gh-update-btn"
+                  title="تحديثات البرنامج" aria-label="تحديثات GitHub">
+            <i class="fas fa-cloud-download-alt"></i>
+            <span class="gh-update-badge" id="gh-update-badge" hidden>!</span>
+          </button>
+          <div class="gh-update-panel" id="gh-update-panel" hidden>
+            <div class="gh-update-panel__head">
+              <strong><i class="fab fa-github me-1"></i>تحديث متاح من GitHub</strong>
+            </div>
+            <div class="gh-update-panel__hint small text-muted">
+              يمكنك التحديث الآن أو التأجيل. لن يُطبَّق شيء إلا بعد الزر، ثم يُعاد التشغيل.
+            </div>
+            <div id="gh-update-empty" class="gh-update-empty">جاري الفحص...</div>
+            <div id="gh-update-body"></div>
+          </div>
+        </div>
+        {% endif %}
+        {% if session.role == 'مدير' or (session.role == 'موظف قسم' and session.dep_id) %}
+        <div class="dept-alert-wrap" id="dept-alert-wrap">
+          <button type="button" class="topbar-btn dept-alert-btn" id="dept-alert-btn"
+                  title="{% if session.role == 'مدير' %}كتب مستلمة في الادارة{% else %}كتب جديدة في قسمك{% endif %}"
+                  aria-label="تنبيهات القسم">
+            <i class="fas fa-bell"></i>
+            <span class="dept-alert-badge" id="dept-alert-badge" hidden>0</span>
+          </button>
+          <div class="dept-alert-panel" id="dept-alert-panel" hidden>
+            <div class="dept-alert-panel__head">
+              <strong><i class="fas fa-inbox me-1"></i>{% if session.role == 'مدير' %}كتب تم استلامها في الادارة{% else %}كتب لم تُفتح في قسمك{% endif %}</strong>
+            </div>
+            <div class="dept-alert-panel__hint small text-muted">
+              يتكرر صوت هادئ وإشعار كل 5 دقائق حتى فتح الكتاب.
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary w-100 mb-2" id="dept-alert-enable-notify">
+              تفعيل إشعارات المتصفح
+            </button>
+            <div class="small mb-2" id="dept-alert-perm-status" style="color:var(--text-sub)"></div>
+            <div id="dept-alert-empty" class="dept-alert-empty">{% if session.role == 'مدير' %}لا توجد كتب بانتظار الاستلام{% else %}لا توجد كتب بانتظار الفتح{% endif %}</div>
+            <div id="dept-alert-list" class="dept-alert-list"></div>
+          </div>
+        </div>
+        {% endif %}
+        <!-- Theme Switcher -->
+        <div class="theme-switcher" title="تغيير الثيم">
+          <button type="button" class="theme-btn t-light" data-theme="light" title="فاتح"></button>
+          <button type="button" class="theme-btn t-dark"  data-theme="dark"  title="داكن"></button>
+          <button type="button" class="theme-btn t-glass" data-theme="glass" title="زجاجي"></button>
+        </div>
+
+      </div>
+    </div>
+    <!-- End Top Bar -->
+
+    <!-- Flash Messages -->
+    <div style="padding: 0 24px; margin-top: 12px">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+              <i class="fas fa-{% if cat == 'success' %}check-circle{% elif cat == 'danger' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+              {{ msg }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Page Body -->
+    <div class="page-body">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div>
+  <!-- End Main Content -->
+
+</div>
+<!-- End App Shell -->
+
+{% endif %}
+
+{% if session.user_id %}
+<div id="attachment-side-panel" class="attachment-side-panel" aria-hidden="true">
+  <div class="attachment-side-panel__backdrop" data-attachment-side-close></div>
+  <aside class="attachment-side-panel__drawer">
+    <div class="attachment-side-panel__header">
+      <span class="fw-700"><i class="fas fa-file-alt me-2"></i>معاينة المرفق</span>
+      <div class="attachment-side-panel__header-actions">
+        <button type="button" class="btn btn-sm btn-outline-primary" data-attachment-print title="طباعة المرفق" disabled>
+          <i class="fas fa-print me-1"></i>طباعة
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-attachment-side-close title="إغلاق">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+    <div id="attachment-side-pdf-wrap" class="attachment-side-panel__pdf-wrap">
+      <div class="attachment-side-panel__pdf-toolbar">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-pdf-prev title="الصفحة السابقة">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        <span data-pdf-page-info class="small fw-600">1 / 1</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-pdf-next title="الصفحة التالية">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      </div>
+      <div class="attachment-side-panel__pdf-scroll">
+        <canvas id="attachment-side-pdf-canvas"></canvas>
+      </div>
+    </div>
+    <iframe id="attachment-side-frame" class="attachment-side-panel__frame" title="معاينة المرفق"></iframe>
+    <img id="attachment-side-img" class="attachment-side-panel__img" alt="معاينة المرفق">
+  </aside>
+</div>
+<script src="{{ url_for('static', filename='naps2_scan.js') }}?v=scanjson2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+{% include '_y_ai_widget.html' %}
+<script src="{{ url_for('static', filename='y_ai.js') }}?v=guide1"></script>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='app.js') }}?v=themes2"></script>
+{% if session.user_id and (session.role == 'موظف قسم' and session.dep_id or session.role == 'مدير') %}
+<script src="{{ url_for('static', filename='dept_alerts.js') }}?v=3"></script>
+{% endif %}
+{% if session.user_id and session.role == 'مدير' %}
+<script src="{{ url_for('static', filename='github_update_notify.js') }}?v=3"></script>
+{% endif %}
+{% if session.user_id and not viewer_qr_mode %}
+<script>
+(function () {
+  var REFRESH_MS = 60000;
+  function isBusy() {
+    var a = document.activeElement;
+    if (a) {
+      var t = (a.tagName || '').toLowerCase();
+      if (t === 'input' || t === 'textarea' || t === 'select' || a.isContentEditable) return true;
+    }
+    if (document.querySelector('.modal.show')) return true;
+    var yai = document.getElementById('y-ai-assistant');
+    if (yai && yai.classList.contains('is-open')) return true;
+    return false;
+  }
+  setInterval(function () {
+    if (document.hidden) return;
+    if (isBusy()) return;
+    window.location.reload();
+  }, REFRESH_MS);
+})();
+</script>
+{% endif %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

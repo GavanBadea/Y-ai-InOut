@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}الأقسام{% endblock %}
+{% block page_title %}<i class="fas fa-building me-2" style="color:var(--accent)"></i>إدارة الأقسام{% endblock %}
+{% block content %}
+<div class="row g-3">
+  {% if session.role == 'مدير' %}
+  <div class="col-md-4">
+    <div class="card border-0">
+      <div class="card-header fw-700">إضافة قسم جديد</div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">اسم القسم <span class="text-danger">*</span></label>
+            <input type="text" name="Dep_Name" class="form-control" required placeholder="مثل: قسم الحسابات">
+          </div>
+          <button type="submit" class="btn btn-primary w-100"><i class="fas fa-plus me-1"></i>إضافة</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  <div class="col-md-{% if session.role == 'مدير' %}8{% else %}12{% endif %}">
+    <div class="card border-0">
+      <div class="card-header fw-700">قائمة الأقسام</div>
+      <div class="card-body p-0">
+        {% if departments %}
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr><th>#</th><th>اسم القسم</th>{% if session.role == 'مدير' %}<th class="no-print">حذف</th>{% endif %}</tr>
+          </thead>
+          <tbody>
+            {% for d in departments %}
+            <tr>
+              <td style="color:var(--text-sub)">{{ d['Dep_No'] }}</td>
+              <td class="fw-600">
+                {{ d['Dep_Name'] }}
+                {% if core_dep_id and d['Dep_No'] == core_dep_id %}
+                <span class="badge bg-primary ms-1" style="font-size:.68rem">أساسي</span>
+                {% endif %}
+              </td>
+              {% if session.role == 'مدير' %}
+              <td class="no-print">
+                {% if core_dep_id and d['Dep_No'] == core_dep_id %}
+                <span class="text-muted small">لا يُحذف</span>
+                {% else %}
+                <form method="POST" action="{{ url_for('dept_delete', id=d['Dep_No']) }}" class="confirm-delete d-inline">
+                  <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                </form>
+                {% endif %}
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5" style="color:var(--text-sub)">
+          <i class="fas fa-building fa-3x mb-3 d-block" style="opacity:.25"></i>لا توجد أقسام
+        </div>
+        {% endif %}
+      </div>
+      {% if departments %}<div class="card-footer" style="font-size:.82rem">{{ departments|length }} قسم</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

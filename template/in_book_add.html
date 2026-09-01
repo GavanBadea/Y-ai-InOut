@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}إضافة كتاب وارد{% endblock %}
+{% block page_title %}<i class="fas fa-plus-circle me-2" style="color:var(--accent)"></i>إضافة كتاب وارد جديد{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-end mb-3">
+  <a href="{{ url_for('incoming_list') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="fas fa-arrow-right me-1"></i>رجوع
+  </a>
+</div>
+
+<div class="card border-0" style="max-width:750px;margin:auto">
+  <div class="card-body p-4">
+    <form method="POST">
+      <div class="row g-3">
+
+        <!-- External book info -->
+        <div class="col-12">
+          <div style="font-size:.75rem;font-weight:800;color:var(--accent);letter-spacing:.05em;margin-bottom:8px">
+            معلومات كتاب الجهة الواردة
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">رقم الكتاب الجهة الواردة</label>
+          <input type="text" name="NoBookCome_In" class="form-control" placeholder="مثل: 1234/2024">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">تاريخ الكتاب</label>
+          <input type="date" name="Date_Com" class="form-control" value="{{ today }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">الجهة الواردة</label>
+          <select name="Add_In_ID" class="form-select">
+            <option value="">— اختر الجهة —</option>
+            {% for s in sources %}
+            <option value="{{ s['Add_InNo'] }}">{{ s['In_place'] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Department reception info -->
+        <div class="col-12 mt-2">
+          <div style="font-size:.75rem;font-weight:800;color:#10b981;letter-spacing:.05em;margin-bottom:8px">
+            معلومات وارد الدائرة
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">رقم وارد الدائرة</label>
+          <input type="text" name="NoBook_Dep" class="form-control" placeholder="الرقم الداخلي للدائرة">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">تاريخ وارد الدائرة</label>
+          <input type="date" name="Date_Dep" class="form-control" value="{{ today }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">القسم الأولي</label>
+          <select name="Current_Dep_ID" class="form-select">
+            <option value="">— اختر القسم —</option>
+            {% for d in departments %}
+            <option value="{{ d['Dep_No'] }}">{{ d['Dep_Name'] }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Subject -->
+        <div class="col-12">
+          <label class="form-label">موضوع الكتاب <span class="text-danger">*</span></label>
+          <textarea name="Subject_Com" class="form-control" rows="3" required
+                    placeholder="أدخل موضوع الكتاب..."></textarea>
+        </div>
+
+        <div class="col-12 d-flex gap-2 mt-2">
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="fas fa-save me-2"></i>حفظ وفتح الكتاب
+          </button>
+          <a href="{{ url_for('incoming_list') }}" class="btn btn-outline-secondary px-4">إلغاء</a>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
